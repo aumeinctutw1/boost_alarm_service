@@ -22,3 +22,8 @@ Bytes 0...3	        Bytes 4...7	            Bytes 8...
 Request ID (uint32)	Cookie size (uint32)	Cookie data
 
 A client could have multiple alarms at the time (100 per client), so you should think about how you could handle this in the future.
+
+
+## Compile
+Server: g++ -I /opt/homebrew/Cellar/boost/1.78.0_1/include server.cpp -o server -std=c++17 
+Client: gcc client.cpp -o client                                                                
