@@ -6,7 +6,11 @@
 #include <boost/asio.hpp>
 #include <chrono>
 
+#define MAX_CONNECTIONS 2
+
 using boost::asio::ip::tcp;
+
+class Server;
 
 struct request {
     uint32_t requestId;
@@ -15,12 +19,12 @@ struct request {
     std::string cookieData;
 };
 
-
 class Session: public std::enable_shared_from_this <Session> {
     public:
-        Session(tcp::socket socket, boost::asio::io_context &io_context)
+        Session(tcp::socket socket, boost::asio::io_context &io_context, Server *server)
                 :   socket_(std::move(socket)), 
-                    timer_(io_context)
+                    timer_(io_context),
+                    server_(server)
         {       
             // count the active connections
             connections++;
@@ -29,11 +33,17 @@ class Session: public std::enable_shared_from_this <Session> {
         ~Session(){
             // reduce active sessions if client disconnects
             connections--;
+
+            if(connections < MAX_CONNECTIONS){
+                openServer(server_);
+            }
         }
+
+        void openServer(Server *server);
 
         void start() {
             // start by reading the header to get the message length
-            read_header();      
+            read_header();  
         }
 
         static int connections;
@@ -95,9 +105,7 @@ class Session: public std::enable_shared_from_this <Session> {
                 });
         }
 
-        void respond_client(const request &req){
-            auto self(shared_from_this());
-            
+        void respond_client(const request &req){            
             const char *req_id = reinterpret_cast<const char*>(&req.requestId);
             const char *cookie_size = reinterpret_cast<const char*>(&req.cookieSize);
 
@@ -148,6 +156,7 @@ class Session: public std::enable_shared_from_this <Session> {
 
         boost::asio::steady_timer timer_;
         tcp::socket socket_;
+        Server *server_;
 
         // buffers, the data is then stored in the request
         std::vector<char> inbound_data_;
@@ -173,53 +182,36 @@ class Server {
             open_acceptor();            
         }
 
+        void open_acceptor(){
+            boost::system::error_code errorCode;
+
+            if(!acceptor_.is_open()){
+                acceptor_.open(endpoint_.protocol());
+                // reuse port and adress
+                acceptor_.set_option(boost::asio::socket_base::reuse_address(true));
+                acceptor_.bind(endpoint_);
+                acceptor_.listen(boost::asio::socket_base::max_listen_connections, errorCode);
+                // accept new connections
+                if(!errorCode){
+                    do_accept();
+                }
+            }
+        }
+
     private:
         void do_accept() { 
             acceptor_.async_accept([this](boost::system::error_code errorCode, tcp::socket socket) {
                 if (!errorCode) {
-                    std::make_shared<Session>(std::move(socket), context_)->start();
+                    std::make_shared<Session>(std::move(socket), context_, this)->start();
                     // at 100 active connections
-                    if(Session::connections == 100 && acceptor_.is_open()){
+                    if(Session::connections == MAX_CONNECTIONS && acceptor_.is_open()){
                         // close the acceptor
                         acceptor_.close();
-                        // and wait until a connection gets closed
-                        wait();
                     } else {
                         do_accept();
                     }
                 }
             });
-        }
-
-        void wait(){
-            // wait 1 millisecond
-            timer_.expires_after(boost::asio::chrono::milliseconds(1));
-            timer_.async_wait([this](boost::system::error_code errorCode){
-                if(!errorCode){
-                    if(Session::connections < 100){
-                        // open the acceptor again
-                        open_acceptor();
-                    } else {
-                        wait();
-                    }
-                } else {
-                    std::cout << "wait: " << errorCode.value() << std::endl;
-                }
-            });
-        }
-
-        void open_acceptor(){
-            boost::system::error_code errorCode;
-
-            acceptor_.open(endpoint_.protocol());
-            // reuse port and adress
-            acceptor_.set_option(boost::asio::socket_base::reuse_address(true));
-            acceptor_.bind(endpoint_);
-            acceptor_.listen(boost::asio::socket_base::max_listen_connections, errorCode);
-            // accept new connections
-            if(!errorCode){
-                do_accept();
-            }
         }
 
         tcp::endpoint endpoint_;
@@ -230,6 +222,10 @@ class Server {
 };
 
 int Session::connections = 0;
+
+void Session::openServer(Server *server){
+    server->open_acceptor();
+}
 
 int main() {
     
