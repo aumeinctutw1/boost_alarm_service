@@ -164,8 +164,6 @@ class Session: public std::enable_shared_from_this <Session> {
 
         // hold the data from the request, needs to be a vector or similar
         std::vector<request> requests;
-
-        std::string testdata;
 };
 
 
