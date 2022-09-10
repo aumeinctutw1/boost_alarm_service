@@ -34,7 +34,7 @@ class Session: public std::enable_shared_from_this <Session> {
             // reduce active sessions if client disconnects
             connections--;
 
-            if(connections < MAX_CONNECTIONS){
+            if (connections < MAX_CONNECTIONS) {
                 open_Server(server_);
             }
         }
@@ -55,7 +55,7 @@ class Session: public std::enable_shared_from_this <Session> {
                 [this, self](boost::system::error_code ec, std::size_t length){
                     if (!ec) {
                         // check if the client has more then 100 timers runnning
-                        if(requests.size() >= 100){
+                        if (requests.size() >= 100) {
                             // error
                         }
 
@@ -92,8 +92,8 @@ class Session: public std::enable_shared_from_this <Session> {
                         request req;
 
                         // find the request by id
-                        for(auto &i : requests){
-                            if (i.requestId == requestId){
+                        for (auto &i : requests) {
+                            if (i.requestId == requestId) {
                                 i.cookieData = cookieData;
                                 req = i;
                                 break;
@@ -117,9 +117,9 @@ class Session: public std::enable_shared_from_this <Session> {
 
             boost::asio::async_write(socket_, buffers,
                 [this](boost::system::error_code ec, std::size_t length){
-                    if (!ec){
+                    if (!ec) {
                         std::cout << "send len: " << length << std::endl;                        
-                    }else{
+                    } else {
                         std::cout << "error responding: " << ec.value() << std::endl;
                     }
                 });
@@ -129,7 +129,7 @@ class Session: public std::enable_shared_from_this <Session> {
             auto self(shared_from_this());
             timer_.expires_after(boost::asio::chrono::seconds(1));
             timer_.async_wait([this, self, req](boost::system::error_code errorCode){
-                if(!errorCode){
+                if (!errorCode) {
                     // get system time
                     using namespace std::chrono;
                     uint64_t sysTime = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
@@ -183,14 +183,14 @@ class Server {
         void open_acceptor(){
             boost::system::error_code errorCode;
 
-            if(!acceptor_.is_open()){
+            if (!acceptor_.is_open()) {
                 acceptor_.open(endpoint_.protocol());
                 // reuse port and adress
                 acceptor_.set_option(boost::asio::socket_base::reuse_address(true));
                 acceptor_.bind(endpoint_);
                 acceptor_.listen(boost::asio::socket_base::max_listen_connections, errorCode);
                 // accept new connections
-                if(!errorCode){
+                if (!errorCode) {
                     do_accept();
                 }
             }
@@ -202,7 +202,7 @@ class Server {
                 if (!errorCode) {
                     std::make_shared<Session>(std::move(socket), context_, this)->start();
                     // at 100 active connections
-                    if(Session::connections == MAX_CONNECTIONS && acceptor_.is_open()){
+                    if(Session::connections == MAX_CONNECTIONS && acceptor_.is_open()) {
                         // close the acceptor
                         acceptor_.close();
                     } else {
