@@ -6,7 +6,7 @@
 #include <boost/asio.hpp>
 #include <chrono>
 
-#define MAX_CONNECTIONS 2
+#define MAX_CONNECTIONS 100
 
 using boost::asio::ip::tcp;
 
@@ -35,11 +35,11 @@ class Session: public std::enable_shared_from_this <Session> {
             connections--;
 
             if(connections < MAX_CONNECTIONS){
-                openServer(server_);
+                open_Server(server_);
             }
         }
 
-        void openServer(Server *server);
+        void open_Server(Server *server);
 
         void start() {
             // start by reading the header to get the message length
@@ -221,11 +221,11 @@ class Server {
 
 int Session::connections = 0;
 
-void Session::openServer(Server *server){
+void Session::open_Server(Server *server){
     server->open_acceptor();
 }
 
-int main() {
+int main(int argc, const char *argv[]) {
     
     short port = 2000;
 
