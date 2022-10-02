@@ -1,11 +1,13 @@
 # Todos
-- Dockerize this application
-- split in header and cpp files
+- split in header and cpp files - CHECK
+- read the port from the args - CHECK
+
+- check if port is above 1024 and below 65536
+- Use Spdlog for logging
 - Implement Limit to the running timers per client
     - Error Handling, from read_header() to start()
+- Dockerize the application
 - Improve the testing client
-- Use Cmake and automated testing
-
 
 # Boost Alarm Service
 Our goal is to implement a TCP server to which alarm clock entries can be sent. 
