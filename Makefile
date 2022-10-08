@@ -10,7 +10,10 @@ build_client:
 build_server:
 	g++ $(INCLUDE) $(INPUT) $(MODULES) -o $(OUTPUT) $(FLAGS)
 
+build_container: build_server
+	docker build -t aumeinctutw1/boost_alarm_service .
+
 build: build_client build_server
 
-run: build
+run_server: build_server
 	./server 2000
