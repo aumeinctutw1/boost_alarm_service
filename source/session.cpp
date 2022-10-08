@@ -22,13 +22,20 @@ Session::~Session(){
     }
 }
 
-void Session::open_Server(Server *server){
-    server->open_acceptor();
-}
-
 void Session::start() {
+    // check if the client has more then max timers runnning
+    if (requests_.size() >= MAX_TIMERS) {
+        // error
+        // close the connection?
+        std::cerr << "to many timers running" << std::endl;
+    }
+    
     // start by reading the header to get the message length
     read_header();  
+}
+
+void Session::open_Server(Server *server){
+    server->open_acceptor();
 }
 
 void Session::read_header(){
@@ -37,11 +44,6 @@ void Session::read_header(){
     boost::asio::async_read(socket_, boost::asio::buffer((char*)&inbound_header_.front(), header_length), 
         [this, self](boost::system::error_code ec, std::size_t length){
             if (!ec) {
-                // check if the client has more then 100 timers runnning
-                if (requests.size() >= 100) {
-                    // error
-                }
-
                 // create a new request
                 request req;
 
@@ -51,10 +53,9 @@ void Session::read_header(){
                 uint32_t high = ntohl(inbound_header_[1]);
                 uint32_t low = ntohl(inbound_header_[2]);
                 req.dueTime = (((uint64_t) high) << 32) | ((uint64_t) low);
-
                 req.cookieSize = ntohl(inbound_header_[3]);
 
-                requests.push_back(req);
+                requests_.push_back(req);
 
                 //resize the inbound data vector so the cookiedata can fit
                 inbound_data_.resize(req.cookieSize);
@@ -76,7 +77,7 @@ void Session::read_data(uint32_t requestId){
                 request req;
 
                 // find the request by id, to set the cookieData
-                for (auto &i : requests) {
+                for (auto &i : requests_) {
                     if (i.requestId == requestId) {
                         i.cookieData = cookieData;
                         req = i;

@@ -12,6 +12,7 @@
 #include "server.h"
 
 #define MAX_CONNECTIONS 3
+#define MAX_TIMERS 5
 
 struct request {
     uint32_t requestId;
@@ -51,7 +52,7 @@ class Session: public std::enable_shared_from_this <Session> {
         std::vector<uint32_t> inbound_header_{0,0,0,0};
 
         // hold the data from the request, needs to be a vector or similar
-        std::vector<request> requests;
+        std::vector<request> requests_;
 };
 
 #endif
