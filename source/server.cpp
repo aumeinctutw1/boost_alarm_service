@@ -30,7 +30,7 @@ void Server::open_acceptor(){
 
 void Server::do_accept() { 
     acceptor_.async_accept(
-        // lambda function
+        // lambda function, constructor of errorCode and socket are called automatically? 
         [this](boost::system::error_code errorCode, tcp::socket socket) {
             if (!errorCode) {
                 // make a shared object, and move over the socket

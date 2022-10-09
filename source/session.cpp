@@ -66,7 +66,8 @@ void Session::read_header(){
                 // start reading the cookiedata
                 read_data(req.requestId);
             }
-        });
+        }
+    );
 }
 
 void Session::read_data(uint32_t requestId){           
@@ -90,7 +91,8 @@ void Session::read_data(uint32_t requestId){
                 // set the timer for the found request
                 set_timer(req);
             }
-        });
+        }
+    );
 }
 
 void Session::respond_client(const request &req){            
@@ -114,7 +116,8 @@ void Session::respond_client(const request &req){
             } else {
                 std::cout << "error responding: " << ec.value() << std::endl;
             }
-        });
+        }
+    );
 
     // Delete the request from the requests vector
 }
@@ -127,24 +130,26 @@ void Session::set_timer(const request &req){
     timer_.expires_after(boost::asio::chrono::seconds(1));
     
     // actually start waiting
-    timer_.async_wait([this, self, req](boost::system::error_code errorCode){
-        if (!errorCode) {
-            // get system time
-            using namespace std::chrono;
-            uint64_t sysTime = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+    timer_.async_wait(
+        [this, self, req](boost::system::error_code errorCode){
+            if (!errorCode) {
+                // get system time
+                using namespace std::chrono;
+                uint64_t sysTime = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 
-            if (sysTime >= req.dueTime) {
-                // time is up, respond to client
-                std::cout << "time is up" << std::endl;
-                //respond to client
-                respond_client(req);
+                if (sysTime >= req.dueTime) {
+                    // time is up, respond to client
+                    std::cout << "time is up" << std::endl;
+                    //respond to client
+                    respond_client(req);
+                } else {
+                    //keep on waiting
+                    std::cout << "ID: " << req.requestId << " Waiting..." << std::endl;
+                    set_timer(req);
+                }
             } else {
-                //keep on waiting
-                std::cout << "ID: " << req.requestId << " Waiting..." << std::endl;
-                set_timer(req);
+                std::cout << "error setting timer: " << errorCode.message() << std::endl;
             }
-        } else {
-            std::cout << "error setting timer: " << errorCode.message() << std::endl;
         }
-    });
+    );
 }
