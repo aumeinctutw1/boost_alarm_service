@@ -29,16 +29,20 @@ void Server::open_acceptor(){
 }
 
 void Server::do_accept() { 
-    acceptor_.async_accept([this](boost::system::error_code errorCode, tcp::socket socket) {
-        if (!errorCode) {
-            std::make_shared<Session>(std::move(socket), context_, this)->start();
-            // at MAX_CONNECTIONS close the server acceptor
-            if(Session::connections == MAX_CONNECTIONS && acceptor_.is_open()) {
-                // close the acceptor
-                acceptor_.close();
-            } else {
-                do_accept();
+    acceptor_.async_accept(
+        // lambda function
+        [this](boost::system::error_code errorCode, tcp::socket socket) {
+            if (!errorCode) {
+                // make a shared object, and move over the socket
+                std::make_shared<Session>(std::move(socket), context_, this)->start();
+                // at MAX_CONNECTIONS close the server acceptor
+                if(Session::connections == MAX_CONNECTIONS && acceptor_.is_open()) {
+                    // close the acceptor
+                    acceptor_.close();
+                } else {
+                    do_accept();
+                }
             }
         }
-    });
+    );
 }

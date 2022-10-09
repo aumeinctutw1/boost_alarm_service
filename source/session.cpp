@@ -4,6 +4,7 @@ using boost::asio::ip::tcp;
 
 int Session::connections = 0;
 
+// the socket gets moved into the session
 Session::Session(tcp::socket socket, boost::asio::io_context &io_context, Server *server)
         :   socket_(std::move(socket)), 
             timer_(io_context),
@@ -49,6 +50,8 @@ void Session::read_header(){
 
                 // read the header into request struct
                 req.requestId = ntohl(inbound_header_[0]);
+
+                // TODO, check if there is a running request with this id
                 
                 uint32_t high = ntohl(inbound_header_[1]);
                 uint32_t low = ntohl(inbound_header_[2]);
