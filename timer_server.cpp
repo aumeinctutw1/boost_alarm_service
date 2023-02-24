@@ -8,7 +8,7 @@ int main(int argc, const char *argv[]) {
     short port;
 
     if (argc != 2) {
-        std::cerr << "now port given" << std::endl;
+        std::cerr << "no port given" << std::endl;
         exit(EXIT_FAILURE);
     }
 
