@@ -34,7 +34,7 @@ void Server::do_accept() {
         [this](boost::system::error_code errorCode, tcp::socket socket) {
             if (!errorCode) {
                 // make a shared object, and move over the socket
-                std::make_shared<Session>(std::move(socket), context_, this)->start();
+                std::make_shared<Session>(std::move(socket), context_, this) -> start();
                 // at MAX_CONNECTIONS close the server acceptor
                 if(Session::connections == MAX_CONNECTIONS && acceptor_.is_open()) {
                     // close the acceptor

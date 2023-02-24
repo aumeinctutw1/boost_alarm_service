@@ -1,7 +1,6 @@
 #ifndef _H_SESSION
 #define _H_SESSION
 
-
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -11,7 +10,7 @@
 
 #include "server.h"
 
-#define MAX_CONNECTIONS 3
+#define MAX_CONNECTIONS 10
 #define MAX_TIMERS 5
 
 struct request {

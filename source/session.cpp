@@ -15,7 +15,7 @@ Session::Session(tcp::socket socket, boost::asio::io_context &io_context, Server
 }
 
 Session::~Session(){
-    // reduce active sessions if client disconnects
+    // reduce active sessions if client disconnects, Race Condition?
     connections--;
 
     if (connections < MAX_CONNECTIONS) {
@@ -129,9 +129,9 @@ void Session::set_timer(const request &req){
     // set the timer to wait for 1 second
     timer_.expires_after(boost::asio::chrono::seconds(1));
     
-    // actually start waiting
+    // start waiting
     timer_.async_wait(
-        [this, self, req](boost::system::error_code errorCode){
+        [this, req](boost::system::error_code errorCode){
             if (!errorCode) {
                 // get system time
                 using namespace std::chrono;
