@@ -25,9 +25,9 @@ class Server;
 
 class Session: public std::enable_shared_from_this <Session> {
     public:
-        Session(boost::asio::ip::tcp::socket socket, boost::asio::io_context &io_context, Server *server);
+        Session(boost::asio::ip::tcp::socket socket, boost::asio::io_context &io_context, Server &server);
         ~Session();
-        void open_Server(Server *server);
+        void open_Server(Server &server);
         void start();
 
         static int connections;
@@ -44,7 +44,7 @@ class Session: public std::enable_shared_from_this <Session> {
 
         boost::asio::steady_timer timer_;
         boost::asio::ip::tcp::socket socket_;
-        Server *server_;
+        Server &server_;
 
         // buffers, the data is then stored in the request
         std::vector<char> inbound_data_;

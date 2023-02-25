@@ -5,7 +5,7 @@ using boost::asio::ip::tcp;
 int Session::connections = 0;
 
 // the socket gets moved into the session
-Session::Session(tcp::socket socket, boost::asio::io_context &io_context, Server *server)
+Session::Session(tcp::socket socket, boost::asio::io_context &io_context, Server &server)
         :   socket_(std::move(socket)), 
             timer_(io_context),
             server_(server)
@@ -35,8 +35,8 @@ void Session::start() {
     read_header();  
 }
 
-void Session::open_Server(Server *server){
-    server->open_acceptor();
+void Session::open_Server(Server &server){
+    server.open_acceptor();
 }
 
 void Session::read_header(){
