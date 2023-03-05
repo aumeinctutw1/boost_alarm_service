@@ -2,7 +2,7 @@ OUTPUT = server
 INPUT = timer_server.cpp
 MODULES = ./source/server.cpp ./source/session.cpp 
 FLAGS = -Wall -Wextra -std=c++17 
-INCLUDE = -I /opt/homebrew/Cellar/boost/1.79.0_2/include
+INCLUDE = -I /opt/homebrew/Cellar/boost/1.80.0/include
 
 build_client:
 	g++ client.cpp -o client
