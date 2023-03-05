@@ -109,7 +109,7 @@ void Session::respond_client(const request_t &req){
 
     // send the buffer to the client
     boost::asio::async_write(socket_, buffers,
-        [this](boost::system::error_code ec, std::size_t length){
+        [](boost::system::error_code ec, std::size_t length){
             if (!ec) {
                 // if everything is going alright, we print the len of the send message
                 std::cout << "send len: " << length << std::endl;                        
