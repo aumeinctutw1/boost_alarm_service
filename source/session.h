@@ -13,12 +13,12 @@
 #define MAX_CONNECTIONS 10
 #define MAX_TIMERS 5
 
-struct request {
+typedef struct request {
     uint32_t requestId;
     uint64_t dueTime;
     uint32_t cookieSize;
     std::string cookieData;
-};
+} request_t;
 
 // forward declaration for server
 class Server;
@@ -35,8 +35,8 @@ class Session: public std::enable_shared_from_this <Session> {
     private:
         void read_header();
         void read_data(uint32_t requestId);
-        void respond_client(const request &req);
-        void set_timer(const request &req);
+        void respond_client(const request_t &req);
+        void set_timer(const request_t &req);
 
         enum {
             header_length = 16,
@@ -51,7 +51,7 @@ class Session: public std::enable_shared_from_this <Session> {
         std::vector<uint32_t> inbound_header_{0,0,0,0};
 
         // hold the data from the request, needs to be a vector or similar
-        std::vector<request> requests_;
+        std::vector<request_t> requests_;
 };
 
 #endif

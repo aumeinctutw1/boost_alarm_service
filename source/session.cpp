@@ -46,7 +46,7 @@ void Session::read_header(){
         [this, self](boost::system::error_code ec, std::size_t length){
             if (!ec) {
                 // create a new request
-                request req;
+                request_t req;
 
                 // read the header into request struct
                 req.requestId = ntohl(inbound_header_[0]);
@@ -78,7 +78,7 @@ void Session::read_data(uint32_t requestId){
             if (!ec) {
                 std::string cookieData(&inbound_data_[0], inbound_data_.size());
                 
-                request req;
+                request_t req;
 
                 // find the request by id, to set the cookieData
                 for (auto &i : requests_) {
@@ -95,7 +95,7 @@ void Session::read_data(uint32_t requestId){
     );
 }
 
-void Session::respond_client(const request &req){            
+void Session::respond_client(const request_t &req){            
     // convert the integers to a const char *
     const char *req_id = reinterpret_cast<const char*>(&req.requestId);
     const char *cookie_size = reinterpret_cast<const char*>(&req.cookieSize);
@@ -122,7 +122,7 @@ void Session::respond_client(const request &req){
     // Delete the request from the requests vector
 }
 
-void Session::set_timer(const request &req){ 
+void Session::set_timer(const request_t &req){ 
     // keep the session alive during the wait operation
     auto self(shared_from_this());
     
