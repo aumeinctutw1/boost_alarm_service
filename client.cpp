@@ -9,12 +9,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define PORT 2000
+//#define PORT 2000
 
 int main(int argc, const char *argv[]) {
     
     int secs = atoi(argv[2]);
     uint32_t requestId = htonl(atoi(argv[1])); 
+    const char *ip = argv[3];
+    int port = atoi(argv[4]);
     char message[] = "Wake up lovely service";
     uint32_t cookieSize = htonl(strlen(message));
 
@@ -39,11 +41,11 @@ int main(int argc, const char *argv[]) {
     }
   
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
+    serv_addr.sin_port = htons(port);
   
     // Convert IPv4 and IPv6 addresses from text to binary
     // form
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, ip, &serv_addr.sin_addr) <= 0) {
         printf("\nInvalid address/ Address not supported \n");
         return -1;
     }
