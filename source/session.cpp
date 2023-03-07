@@ -15,7 +15,6 @@ Session::Session(tcp::socket socket, boost::asio::io_context &io_context, Server
 }
 
 Session::~Session(){
-    // reduce active sessions if client disconnects, Race Condition?
     connections--;
 
     if (connections < MAX_CONNECTIONS) {
@@ -50,8 +49,6 @@ void Session::read_header(){
 
                 // read the header into request struct
                 req.requestId = ntohl(inbound_header_[0]);
-
-                // TODO, check if there is a running request with this id
                 
                 uint32_t high = ntohl(inbound_header_[1]);
                 uint32_t low = ntohl(inbound_header_[2]);
@@ -65,6 +62,8 @@ void Session::read_header(){
 
                 // start reading the cookiedata
                 read_data(req.requestId);
+            } else {
+                std::cerr << "Error: async read: " << ec.message() << std::endl;
             }
         }
     );
@@ -80,6 +79,8 @@ void Session::read_data(uint32_t requestId){
                 
                 request_t req;
 
+                std::cout << "Client send: " << cookieData << std::endl;
+
                 // find the request by id, to set the cookieData
                 for (auto &i : requests_) {
                     if (i.requestId == requestId) {
@@ -90,6 +91,8 @@ void Session::read_data(uint32_t requestId){
                 }
                 // set the timer for the found request
                 set_timer(req);
+            } else {
+                std::cerr << "error reading data " << ec.message() << std::endl;
             }
         }
     );
@@ -101,20 +104,20 @@ void Session::respond_client(const request_t &req){
     const char *cookie_size = reinterpret_cast<const char*>(&req.cookieSize);
 
     // build buffer
-    std::vector<boost::asio::const_buffer> buffers;
-    buffers.push_back(boost::asio::buffer(req_id, sizeof(uint32_t)));
-    buffers.push_back(boost::asio::buffer(cookie_size, sizeof(uint32_t)));
+    std::vector<boost::asio::const_buffer> buffer;
+    buffer.push_back(boost::asio::buffer(req_id, sizeof(uint32_t)));
+    buffer.push_back(boost::asio::buffer(cookie_size, sizeof(uint32_t)));
     // in case of cookieData, the buffer can be directly build from std::string
-    buffers.push_back(boost::asio::buffer(req.cookieData, req.cookieSize));
+    buffer.push_back(boost::asio::buffer(req.cookieData, req.cookieSize));
 
     // send the buffer to the client
-    boost::asio::async_write(socket_, buffers,
-        [](boost::system::error_code ec, std::size_t length){
+    boost::asio::async_write(socket_, buffer,
+        [this](boost::system::error_code ec, std::size_t length){
             if (!ec) {
                 // if everything is going alright, we print the len of the send message
                 std::cout << "send len: " << length << std::endl;                        
             } else {
-                std::cout << "error responding: " << ec.value() << std::endl;
+                std::cerr << "error responding client: " << ec.message() << std::endl;
             }
         }
     );
@@ -131,8 +134,8 @@ void Session::set_timer(const request_t &req){
     
     // start waiting
     timer_.async_wait(
-        [this, req](boost::system::error_code errorCode){
-            if (!errorCode) {
+        [this, self, req](boost::system::error_code ec){
+            if (!ec) {
                 // get system time
                 using namespace std::chrono;
                 uint64_t sysTime = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
@@ -148,7 +151,8 @@ void Session::set_timer(const request_t &req){
                     set_timer(req);
                 }
             } else {
-                std::cout << "error setting timer: " << errorCode.message() << std::endl;
+                std::cerr << "error setting timer: " << ec.message() << " " << ec.value() << std::endl;
+                std::cerr << "On Request: " << req.requestId << " Time: " << req.dueTime << " Message: " << req.cookieData << std::endl;
             }
         }
     );
