@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <unordered_map>
 #include <memory>
 #include <utility>
 #include <boost/asio.hpp>
@@ -51,7 +52,8 @@ class Session: public std::enable_shared_from_this <Session> {
         std::vector<uint32_t> inbound_header_{0,0,0,0};
 
         // hold the data from the request, needs to be a vector or similar
-        std::vector<request_t> requests_;
+        //std::vector<request_t> requests_;
+        std::unordered_map<uint32_t, request_t> requests_;        
 };
 
 #endif

@@ -64,6 +64,15 @@ int main(int argc, const char *argv[]) {
 
     printf("Hello message sent\n");
 
+    requestId += 1;
+    send(sock, &requestId, sizeof(uint32_t), 0);
+    send(sock, &low, sizeof(uint32_t), 0);
+    send(sock, &high, sizeof(uint32_t), 0);
+    send(sock, &cookieSize, sizeof(uint32_t), 0);
+    send(sock, message, strlen(message), 0);
+    
+    printf("Hello message sent again\n");
+
     // read header - request id
     valread = read(sock, buffer, 4);
     printf("read bytes: %d\n", valread);

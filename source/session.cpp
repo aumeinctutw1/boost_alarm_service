@@ -55,7 +55,15 @@ void Session::read_header(){
                 req.dueTime = (((uint64_t) high) << 32) | ((uint64_t) low);
                 req.cookieSize = ntohl(inbound_header_[3]);
 
-                requests_.push_back(req);
+                //requests_.push_back(req);
+
+                if (requests_.contains(req.requestId)) {
+                    // error
+                    std::cerr << "Error: there already is a running request with id: " << req.requestId << std::endl;
+                    // send response to client? close connection?
+                }
+
+                requests_[req.requestId] = req;
 
                 //resize the inbound data vector so the cookiedata can fit
                 inbound_data_.resize(req.cookieSize);
@@ -76,21 +84,12 @@ void Session::read_data(uint32_t requestId){
         [this, self, requestId](boost::system::error_code ec, std::size_t length){
             if (!ec) {
                 std::string cookieData(&inbound_data_[0], inbound_data_.size());
-                
-                request_t req;
 
-                std::cout << "Client send: " << cookieData << std::endl;
+                std::cout << "Client send: " << cookieData << " in request with id: " << requestId<< std::endl;
 
-                // find the request by id, to set the cookieData
-                for (auto &i : requests_) {
-                    if (i.requestId == requestId) {
-                        i.cookieData = cookieData;
-                        req = i;
-                        break;
-                    }
-                }
-                // set the timer for the found request
-                set_timer(req);
+                requests_[requestId].cookieData = cookieData;
+
+                set_timer(requests_[requestId]);
             } else {
                 std::cerr << "error reading data " << ec.message() << std::endl;
             }
@@ -123,6 +122,7 @@ void Session::respond_client(const request_t &req){
     );
 
     // Delete the request from the requests vector
+    requests_.erase(req.requestId);
 }
 
 void Session::set_timer(const request_t &req){ 
@@ -152,7 +152,6 @@ void Session::set_timer(const request_t &req){
                 }
             } else {
                 std::cerr << "error setting timer: " << ec.message() << " " << ec.value() << std::endl;
-                std::cerr << "On Request: " << req.requestId << " Time: " << req.dueTime << " Message: " << req.cookieData << std::endl;
             }
         }
     );

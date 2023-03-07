@@ -1,7 +1,7 @@
 OUTPUT = server
 INPUT = timer_server.cpp
 MODULES = ./source/server.cpp ./source/session.cpp 
-FLAGS = -Wall -Wextra -std=c++17 
+FLAGS = -Wall -Wextra -std=c++20 
 INCLUDE = -I /opt/homebrew/Cellar/boost/1.80.0/include
 
 build_client:
