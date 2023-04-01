@@ -1,11 +1,11 @@
 OUTPUT = server
-INPUT = timer_server.cpp
+INPUT = ./source/main.cpp
 MODULES = ./source/server.cpp ./source/session.cpp 
 FLAGS = -Wall -Wextra -std=c++20 
-INCLUDE = -I /opt/homebrew/Cellar/boost/1.80.0/include
+INCLUDE = -lboost_system
 
 build_client:
-	g++ client.cpp -o client
+	g++ -lboost_program_options client.cpp -o client
 
 build_server:
 	g++ $(INCLUDE) $(INPUT) $(MODULES) -o $(OUTPUT) $(FLAGS)
