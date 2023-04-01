@@ -1,14 +1,3 @@
-# Todos
-- split in header and cpp files - CHECK
-- read the port from the args - CHECK
-
-- check if port is above 1024 and below 65536
-- Use Spdlog for logging
-- Implement Limit to the running timers per client
-    - Error Handling, from read_header() to start()
-- Dockerize the application
-- Improve the testing client
-
 # Boost Alarm Service
 Our goal is to implement a TCP server to which alarm clock entries can be sent. 
 The client should be notified via a socket connection when the timer has expired. 
