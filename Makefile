@@ -5,7 +5,7 @@ FLAGS = -Wall -Wextra -std=c++20
 INCLUDE = -lboost_system
 
 build_client:
-	g++ -lboost_program_options client.cpp -o client
+	g++ client.cpp -o client -lboost_system -lboost_program_options $(FLAGS) 
 
 build_server:
 	g++ $(INCLUDE) $(INPUT) $(MODULES) -o $(OUTPUT) $(FLAGS)

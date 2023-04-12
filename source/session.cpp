@@ -40,20 +40,20 @@ void Session::open_Server(Server &server){
 
 void Session::read_header(){
     auto self(shared_from_this());
-
     boost::asio::async_read(socket_, boost::asio::buffer((char*)&inbound_header_.front(), header_length), 
         [this, self](boost::system::error_code ec, std::size_t length){
             if (!ec) {
                 // create a new request
+                std::cout << "Request incoming" << std::endl;
                 request_t req;
 
                 // read the header into request struct
-                req.requestId = ntohl(inbound_header_[0]);
+                req.requestId = inbound_header_[0];
                 
-                uint32_t high = ntohl(inbound_header_[1]);
-                uint32_t low = ntohl(inbound_header_[2]);
-                req.dueTime = (((uint64_t) high) << 32) | ((uint64_t) low);
-                req.cookieSize = ntohl(inbound_header_[3]);
+                uint32_t high = inbound_header_[1];
+                uint32_t low = inbound_header_[2];
+                req.dueTime = (((uint64_t) low) | ((uint64_t) high) << 32);
+                req.cookieSize = inbound_header_[3];
 
                 //requests_.push_back(req);
 
@@ -68,6 +68,8 @@ void Session::read_header(){
                 //resize the inbound data vector so the cookiedata can fit
                 inbound_data_.resize(req.cookieSize);
 
+                std::cout << "New Request: " << req.requestId << " " << req.dueTime << " " << req.cookieSize << std::endl; 
+
                 // start reading the cookiedata
                 read_data(req.requestId);
             } else {
@@ -79,7 +81,6 @@ void Session::read_header(){
 
 void Session::read_data(uint32_t requestId){           
     auto self(shared_from_this());
-
     boost::asio::async_read(socket_, boost::asio::buffer(inbound_data_), 
         [this, self, requestId](boost::system::error_code ec, std::size_t length){
             if (!ec) {
