@@ -40,7 +40,7 @@ void Session::open_Server(Server &server){
 
 void Session::read_header(){
     auto self(shared_from_this());
-    boost::asio::async_read(socket_, boost::asio::buffer((char*)&inbound_header_.front(), header_length), 
+    boost::asio::async_read(socket_, boost::asio::buffer(&inbound_header_.front(), header_length), 
         [this, self](boost::system::error_code ec, std::size_t length){
             if (!ec) {
                 // create a new request

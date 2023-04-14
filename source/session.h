@@ -24,7 +24,7 @@ typedef struct request {
 // forward declaration for server
 class Server;
 
-class Session: public std::enable_shared_from_this <Session> {
+class Session: public std::enable_shared_from_this<Session> {
     public:
         Session(boost::asio::ip::tcp::socket socket, boost::asio::io_context &io_context, Server &server);
         ~Session();
